@@ -4,14 +4,14 @@ export const products = [
     title: "Marquina_Black",
     category: "Porcelanatos",
     price: 45.99,
-    image: "src/assets/Marquina_Black.jpeg"
+    image: "assets/Marquina_Black.jpeg"
   },
   {
     id: 2,
     title: "Portoro_Black",
     category: "Mosaicos",
     price: 12.50,
-    image: "src/assets/Portoro_Black.jpeg"
+    image: "assets/Portoro_Black.jpeg"
   },
   {
     id: 3,

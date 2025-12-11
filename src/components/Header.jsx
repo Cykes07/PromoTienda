@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navbar, Container, Form, Button, Nav, InputGroup } from 'react-bootstrap';
-import { FaSearch, FaShoppingCart, FaDragon } from 'react-icons/fa'; // Usamos un Dragón como logo temporal
+import { FaSearch, FaShoppingCart } from 'react-icons/fa';
 
 export function Header() {
   return (
@@ -21,8 +21,8 @@ export function Header() {
           {/* LOGO */}
           <Navbar.Brand href="#home" className="d-flex align-items-center gap-2">
             <img 
-              src="src\assets\PromoConstruye_Logo.png"
-              alt="Grifine Logo" 
+              src="assets/PromoConstruye_Logo.png"
+              alt="PromoConstruye Logo" 
               height="60"  // Ajusta este número según el tamaño que quieras
               className="d-inline-block align-top"
             />
