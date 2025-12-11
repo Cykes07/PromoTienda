@@ -18,10 +18,15 @@ export function ProductGrid() {
               {/* Imagen */}
               <div className="position-relative overflow-hidden" style={{ height: '250px' }}>
                  <Card.Img 
-                    variant="top" 
-                    src={import.meta.env.BASE_URL + product.image} 
+                   variant="top" 
+                    src={
+                        product.image.startsWith('http') 
+                            ? product.image 
+                            : import.meta.env.BASE_URL + product.image
+                    } 
                     className="h-100 w-100" 
                     style={{ objectFit: 'cover' }} 
+                    onError={(e) => console.log("Falló al cargar:", e.target.src)} 
                  />
               </div>
               
