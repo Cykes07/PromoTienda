@@ -11,7 +11,7 @@ export const products = [
     title: "Portoro_Black",
     category: "Mosaicos",
     price: 12.50,
-    image: "./img/Portoro_Black.JPEG"
+    image: "./img/Portoro_Black.jpeg"
   },
   {
     id: 3,
