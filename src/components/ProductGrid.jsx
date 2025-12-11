@@ -19,7 +19,7 @@ export function ProductGrid() {
               <div className="position-relative overflow-hidden" style={{ height: '250px' }}>
                  <Card.Img 
                     variant="top" 
-                    src={product.image} 
+                    src={import.meta.env.BASE_URL + product.image} 
                     className="h-100 w-100" 
                     style={{ objectFit: 'cover' }} 
                  />
@@ -51,7 +51,7 @@ export function ProductGrid() {
                 <div className="position-relative overflow-hidden" style={{ height: '250px' }}>
                     <Card.Img 
                         variant="top" 
-                        src={product.image} 
+                        src={import.meta.env.BASE_URL + product.image} 
                         className="h-100 w-100" 
                         style={{ objectFit: 'cover' }} 
                     />
