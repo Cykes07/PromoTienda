@@ -21,7 +21,7 @@ export function Header() {
           {/* LOGO */}
           <Navbar.Brand href="#home" className="d-flex align-items-center gap-2">
             <img 
-              src="assets/PromoConstruye_Logo.png"
+              src="img/PromoConstruye_Logo.png"
               alt="PromoConstruye Logo" 
               height="60"  // Ajusta este número según el tamaño que quieras
               className="d-inline-block align-top"
