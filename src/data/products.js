@@ -1,17 +1,25 @@
 export const products = [
   {
     id: 1,
-    title: "Marquina_Black",
+    title: "Travertino Romano",
     category: "Porcelanatos",
     price: 45.99,
-    image: "./img/Marquina_Black.jpeg"
+    stock: 120,
+    image: "img/travertino.jpg", // Asegúrate de que el nombre del archivo coincida
+    gallery: ["img/travertino.jpg"], // Puedes agregar más fotos si tienes
+    description: "Porcelanato de alto tráfico con acabado mate, ideal para exteriores.",
+    specs: "Formato: 60x120cm | Acabado: Mate | Origen: España"
   },
   {
     id: 2,
-    title: "Portoro_Black",
+    title: "Marquina Black",
     category: "Mosaicos",
     price: 12.50,
-    image: "./img/Portoro_Black.jpeg"
+    stock: 0,
+    image: "img/marquina-black.jpg",
+    gallery: ["img/marquina-black.jpg"],
+    description: "Elegancia pura con vetas blancas sobre fondo negro profundo.",
+    specs: "Formato: 30x30cm | Acabado: Brillante"
   },
   {
     id: 3,
