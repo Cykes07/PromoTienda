@@ -6,7 +6,7 @@ export const products = [
     price: 45.99,
     stock: 120,
     image: "/img/Marquina_Black.jpeg", // Asegúrate de que el nombre del archivo coincida
-    gallery: ["/img/Marquina_Black.jpeg"], // Puedes agregar más fotos si tienes
+    gallery: ["/img/Marquina_Black.jpeg","/img/Portoro_Black.jpeg","/img/Marquina_Black.jpeg"],  // Puedes agregar más fotos si tienes
     description: "Porcelanato de alto tráfico con acabado mate, ideal para exteriores.",
     specs: "Formato: 60x120cm | Acabado: Mate | Origen: España"
   },
