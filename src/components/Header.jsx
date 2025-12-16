@@ -1,6 +1,8 @@
 import React from 'react';
 import { Navbar, Container, Form, Button, Nav, InputGroup } from 'react-bootstrap';
 import { FaSearch, FaShoppingCart } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import logoImg from '../assets/PromoLogo.png';
 
 export function Header() {
   return (
@@ -19,11 +21,11 @@ export function Header() {
       <Navbar bg="white" expand="lg" className="py-4 shadow-sm">
         <Container>
           {/* LOGO */}
-          <Navbar.Brand href="#home" className="d-flex align-items-center gap-2">
+          <Navbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2">
             <img 
-              src="img/PromoConstruye_Logo.png"
+              src={logoImg}
               alt="PromoConstruye Logo" 
-              height="60"  // Ajusta este número según el tamaño que quieras
+              height="60"  // tamaño
               className="d-inline-block align-top"
             />
           </Navbar.Brand>
