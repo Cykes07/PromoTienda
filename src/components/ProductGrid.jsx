@@ -1,12 +1,10 @@
 import React from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { products } from '../data/products';
-import { Link } from 'react-router-dom'; // <--- 1. IMPORTAR LINK
+import { Link } from 'react-router-dom'; 
 
 export function ProductGrid() {
   
-  // Función auxiliar para arreglar la ruta de la imagen (Internet vs Local)
-  // Esto evita que escribas el código largo dos veces
   const getImgPath = (img) => {
     if (!img) return "";
     return img.startsWith('http') ? img : import.meta.env.BASE_URL + img;
