@@ -1,107 +1,145 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Container, Row, Col, Button, Badge, Tabs, Tab } from 'react-bootstrap';
-import { products } from '../data/products'; 
-import { NotFound } from './NotFound';
-import AdditionalInfoTable from './AdditionalInfoTable';
+import { supabase } from '../supabaseClient';
+import { Container, Row, Col, Button, Spinner, Badge, Tabs, Tab, Table, Carousel } from 'react-bootstrap';
 
 export function ProductDetail() {
   const { id } = useParams();
-  const product = products.find(p => p.id === parseInt(id));
-
-  // 1. DETECTOR DE INFORMACIÓN ADICIONAL
-  // Verificamos si existe al menos uno de los campos técnicos importantes.
-  // Si tu base de datos devuelve null o undefined, esto será false.
-  const hasAdditionalInfo = product && (
-      product.brand || 
-      product.application || 
-      product.code || 
-      product.m2PerBox
-  );
-
-  // 2. LÓGICA DE PESTAÑA INICIAL
-  // Si hay info adicional, empezamos ahí. Si no, forzamos 'description'.
-  const [activeTab, setActiveTab] = useState(hasAdditionalInfo ? 'info' : 'description');
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   
-  const [mainImg, setMainImg] = useState(product ? product.image : '');
-  const stockReal = product ? Number(product.stock) : 0; 
+  const [index, setIndex] = useState(0); 
 
-  if (!product) { return <NotFound />; }
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+        if (error) throw error;
+        setProduct(data);
+      } catch (error) { console.error("Error:", error); } 
+      finally { setLoading(false); }
+    };
+    fetchProduct();
+  }, [id]);
 
-  const getImgPath = (path) => path.startsWith('http') ? path : import.meta.env.BASE_URL + path;
+  const handleSelect = (selectedIndex) => {
+    setIndex(selectedIndex);
+  };
+
+  if (loading) return <Container className="py-5 text-center"><Spinner animation="border" /></Container>;
+  if (!product) return <Container className="py-5 text-center"><h2>Producto no encontrado 😕</h2><Link to="/">Volver</Link></Container>;
+
+  const specs = product.specifications || [];
+  const allImages = [];
+  if (product.image) allImages.push(product.image);
+  if (product.gallery_images && Array.isArray(product.gallery_images)) {
+      allImages.push(...product.gallery_images);
+  }
+  const defaultImage = "https://via.placeholder.com/500?text=Sin+Imagen";
 
   return (
     <Container className="py-5">
-      <Link to="/" className="btn btn-outline-secondary mb-4">← Volver al Catálogo</Link>
+      {/* PEQUEÑO ESTILO CSS PARA QUITAR EL AZUL DE LAS PESTAÑAS */}
+      <style>
+        {`
+          .custom-tabs .nav-link {
+            color: #555 !important; /* Gris oscuro en lugar de azul */
+            font-weight: 600;
+          }
+          .custom-tabs .nav-link.active {
+            color: #000 !important; /* Negro total cuando está activo */
+            border-bottom: 2px solid #000 !important;
+          }
+        `}
+      </style>
 
-      {/* --- SECCIÓN SUPERIOR (Igual que antes) --- */}
+      <Link to="/" className="btn btn-outline-secondary mb-4">← Volver al catálogo</Link>
+      
       <Row className="mb-5">
         <Col md={6}>
-            <div className="border mb-3 bg-white">
-                <img src={getImgPath(mainImg || product.image)} alt={product.title} className="w-100" style={{ objectFit: 'contain', maxHeight: '500px' }} />
-            </div>
-            <div className="d-flex gap-2">
-                {product.gallery && product.gallery.map((img, index) => (
-                    <img key={index} src={getImgPath(img)} className="border cursor-pointer" width="80" height="80" style={{ objectFit: 'cover', cursor: 'pointer' }} onClick={() => setMainImg(img)} />
-                ))}
-            </div>
+            <Carousel activeIndex={index} onSelect={handleSelect} className="shadow-sm rounded overflow-hidden mb-3" style={{ background: '#f8f9fa' }} interval={null}>
+                {allImages.length > 0 ? (
+                    allImages.map((imgUrl, i) => (
+                        <Carousel.Item key={i}>
+                            <img className="d-block w-100" src={imgUrl} alt={`Slide ${i}`} style={{ maxHeight: '500px', objectFit: 'contain', minHeight: '300px' }} onError={(e) => {e.target.src = defaultImage}} />
+                        </Carousel.Item>
+                    ))
+                ) : ( <Carousel.Item><img className="d-block w-100" src={defaultImage} alt="Sin imagen" /></Carousel.Item> )}
+            </Carousel>
+            {allImages.length > 1 && (
+                <div className="d-flex justify-content-center gap-2 overflow-auto py-2">
+                    {allImages.map((imgUrl, i) => (
+                        <div key={i} onClick={() => setIndex(i)} style={{ width: '70px', height: '70px', cursor: 'pointer', border: index === i ? '2px solid #333' : '1px solid #dee2e6', borderRadius: '6px', padding: '2px', opacity: index === i ? 1 : 0.6 }}>
+                            <img src={imgUrl} alt={`Thumb ${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />
+                        </div>
+                    ))}
+                </div>
+            )}
         </Col>
 
         <Col md={6}>
-            <h6 className="text-muted text-uppercase">{product.category}</h6>
-            <h1 className="fw-bold">{product.title}</h1>
-            <h3 className="text-danger my-3">${product.price}</h3>
-            <p className="lead text-secondary">{product.description}</p>
-            
-            <div className="mb-4">
-                {stockReal > 0 ? (
-                    <Badge bg="success" className="p-2 fs-6">En Stock: {stockReal} unidades</Badge>
-                ) : (
-                    <Badge bg="danger" className="p-2 fs-6">Agotado</Badge>
-                )}
-            </div>
-
-            <div className="d-grid gap-2">
-                <Button variant="dark" size="lg" disabled={stockReal <= 0}>
-                    {stockReal > 0 ? 'Añadir al Carrito' : 'Sin Stock'}
+            <div className="ps-md-4 mt-3 mt-md-0">
+                <Badge bg="dark" className="mb-2">{product.category}</Badge> {/* Categoría negra/gris */}
+                <h1 className="fw-bold">{product.title}</h1>
+                
+                {/* CAMBIO DE COLOR: Antes era 'text-primary' (azul), ahora 'text-dark' (negro) */}
+                <h2 className="text-danger fw-bold my-3" style={{ fontSize: '2.5rem' }}> ${product.price}</h2>
+                
+                <p className="lead text-muted">{product.description}</p>
+                <hr />
+                <div className="d-flex align-items-center mb-4">
+                    <span className={`px-3 py-2 rounded text-white fw-bold shadow-sm ${product.stock > 0 ? 'bg-success' : 'bg-danger'}`} style={{ fontSize: '1.2rem' }}>
+                        {product.stock > 0 ? `En Stock: ${product.stock} unidades` : 'Agotado'}
+                    </span>
+                </div>
+                <Button variant="dark" size="lg" className="w-100" disabled={product.stock <= 0}>
+                    {product.stock > 0 ? 'Añadir al Carrito' : 'Sin Stock'}
                 </Button>
             </div>
         </Col>
       </Row>
 
-      {/* --- SECCIÓN INFERIOR CONDICIONAL --- */}
       <Row>
           <Col>
-              <div className="bg-white p-4 shadow-sm rounded border">
-                  
-                  {/* CASO A: TIENE INFORMACIÓN TÉCNICA -> Mostramos Tabs */}
-                  {hasAdditionalInfo ? (
-                      <Tabs
-                          id="product-tabs"
-                          activeKey={activeTab}
-                          onSelect={(k) => setActiveTab(k)}
-                          className="mb-3"
-                      >
-                          <Tab eventKey="info" title="INFORMACIÓN ADICIONAL">
-                              <h5 className="mb-3 text-secondary">Ficha Técnica</h5>
-                              <AdditionalInfoTable product={product} />
-                          </Tab>
-                          
-                          <Tab eventKey="description" title="DESCRIPCIÓN COMPLETA">
-                               <div className="p-2">
-                                  <p>{product.description}</p>
-                               </div>
-                          </Tab>
-                      </Tabs>
-                  ) : (
-                      // CASO B: NO TIENE INFORMACIÓN -> Solo mostramos la descripción (Sin Tabs)
-                      <div>
-                          <h5 className="mb-3 text-secondary border-bottom pb-2">DESCRIPCIÓN COMPLETA</h5>
-                          <p>{product.description}</p>
-                      </div>
-                  )}
+            <div className="bg-white p-4 rounded shadow-sm border">
+                {/* CAMBIO DE ORDEN Y CLASE CSS PERSONALIZADA */}
+                <Tabs 
+                    defaultActiveKey="desc" // <--- AHORA ARRANCA EN DESCRIPCIÓN
+                    id="product-tabs" 
+                    className="mb-3 custom-tabs" // <--- NUEVA CLASE PARA EL COLOR OSCURO
+                >
+                    
+                    {/* 1. DESCRIPCIÓN COMPLETA (PRIMERO) */}
+                    <Tab eventKey="desc" title="DESCRIPCIÓN COMPLETA">
+                        <div className="p-2">
+                            <p className="text-dark" style={{fontSize: '1.1rem'}}>
+                                {product.description || "Sin descripción detallada."}
+                            </p>
+                            <p className="text-muted small mt-4">
+                                * Las imágenes son referenciales y pueden variar ligeramente del producto real.
+                            </p>
+                        </div>
+                    </Tab>
 
-              </div>
+                    {/* 2. INFORMACIÓN ADICIONAL (SEGUNDO) */}
+                    <Tab eventKey="info" title="INFORMACIÓN ADICIONAL">
+                        <h5 className="mb-3 text-secondary">Ficha Técnica</h5>
+                        {specs.length > 0 ? (
+                            <Table striped bordered hover responsive>
+                                <tbody>
+                                    {specs.map((item, i) => (
+                                        <tr key={i}>
+                                            <th style={{width: '30%'}} className="text-secondary bg-light">{item.title}</th>
+                                            <td className="text-dark fw-bold">{item.value}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        ) : ( <p className="text-muted">No hay detalles técnicos.</p> )}
+                    </Tab>
+
+                </Tabs>
+            </div>
           </Col>
       </Row>
     </Container>

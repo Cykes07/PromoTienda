@@ -1,104 +1,108 @@
-import React from 'react';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
-import { products } from '../data/products';
-import { Link } from 'react-router-dom'; 
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient';
+import { Container, Row, Col, Card, Button, Spinner, Badge } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 export function ProductGrid() {
-  
-  const getImgPath = (img) => {
-    if (!img) return "";
-    return img.startsWith('http') ? img : import.meta.env.BASE_URL + img;
-  };
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          // 1. ELIMINAMOS EL FILTRO .gt('stock', 0) PARA MOSTRAR TODO
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+        setProducts(data || []);
+      } catch (error) {
+        console.error("Error cargando productos:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <Container className="text-center py-5">
+        <Spinner animation="border" variant="dark" />
+      </Container>
+    );
+  }
 
   return (
-    <Container className="my-5">
+    <Container className="py-5" id="productos">
+      <h2 className="text-center mb-5 fw-bold text-secondary">Nuestra Colección</h2>
       
-      {/* --- SECCIÓN 1: NUEVOS --- */}
-      <div className="text-center mb-5">
-        <h3 className="fw-bold text-uppercase text-dark">Nuevos</h3>
-        <div className="mx-auto mt-2" style={{ width: '80px', height: '3px', backgroundColor: '#fd7e14' }}></div>
-      </div>
-
-      <Row>
-        {products.map((product) => (
-          <Col key={product.id} md={6} lg={3} className="mb-4">
-            <Card className="h-100 border-0 shadow-sm hover-effect">
-              
-              {/* 2. ENLACE EN LA IMAGEN */}
-              <Link to={`/product/${product.id}`} className="position-relative overflow-hidden d-block" style={{ height: '250px' }}>
-                 <Card.Img 
-                    variant="top" 
-                    src={getImgPath(product.image)} // Usamos la función auxiliar
-                    className="h-100 w-100" 
-                    style={{ objectFit: 'cover' }}
-                    onError={(e) => console.log("Falló imagen:", e.target.src)} 
-                 />
-              </Link>
-              
-              <Card.Body className="text-center">
-                {/* 3. ENLACE EN EL TÍTULO */}
-                <Link to={`/product/${product.id}`} className="text-decoration-none">
-                    <Card.Title className="fs-6 fw-bold text-secondary mb-3">{product.title}</Card.Title>
-                </Link>
-
-                <div className="d-flex justify-content-center align-items-center gap-2 mb-3">
-                    <span className="text-warning fs-5">★ ★ ★ ★ ☆</span>
-                </div>
-                <Card.Text className="fw-bold text-danger fs-5">
-                  ${product.price.toFixed(2)}
-                </Card.Text>
-                
-                {/* 4. ENLACE EN EL BOTÓN */}
-                <Link to={`/product/${product.id}`} className="d-block text-decoration-none">
-                    <Button variant="dark" className="w-100 rounded-0 text-uppercase">Ver Detalles</Button>
-                </Link>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      {/* --- SECCIÓN 2: PRODUCTOS --- */}
-      <div className="text-center mb-5">
-          <h3 className="fw-bold text-uppercase text-dark">Productos</h3>
-          <div className="mx-auto mt-2" style={{ width: '80px', height: '3px', backgroundColor: '#fd7e14' }}></div>
-      </div>
-      
-      <Row>
+      {products.length === 0 ? (
+        <div className="text-center py-5">
+          <h4>No hay productos disponibles.</h4>
+        </div>
+      ) : (
+        <Row>
           {products.map((product) => (
-          <Col key={product.id} md={6} lg={3} className="mb-4">
-              <Card className="h-100 border-0 shadow-sm hover-effect">
+            <Col key={product.id} md={4} lg={3} className="mb-4">
               
-              {/* Repetimos la lógica corregida aquí también */}
-              <Link to={`/product/${product.id}`} className="position-relative overflow-hidden d-block" style={{ height: '250px' }}>
-                  <Card.Img 
-                      variant="top" 
-                      src={getImgPath(product.image)} 
-                      className="h-100 w-100" 
-                      style={{ objectFit: 'cover' }} 
-                  />
-              </Link>
-              
-              <Card.Body className="text-center">
-                  <Link to={`/product/${product.id}`} className="text-decoration-none">
-                      <Card.Title className="fs-6 fw-bold text-secondary mb-3">{product.title}</Card.Title>
-                  </Link>
+              {/* DISEÑO TIPO TARJETA LIMPIA (COMO TU FOTO) */}
+              <Card className="h-100 border-0 shadow-sm bg-white">
+                
+                {/* 1. IMAGEN */}
+                <div style={{ position: 'relative', overflow: 'hidden' }}>
+                    <Link to={`/product/${product.id}`}>
+                        <Card.Img 
+                            variant="top" 
+                            src={product.image || "https://via.placeholder.com/300?text=Sin+Foto"} 
+                            style={{ height: '250px', objectFit: 'cover' }}
+                            onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/300?text=Sin+Foto"; }}
+                        />
+                    </Link>
+                    
+                    {/* Badge "AGOTADO" si stock es 0 (Opcional pero recomendado) */}
+                    {product.stock <= 0 && (
+                        <Badge bg="danger" className="position-absolute top-0 end-0 m-3 shadow">
+                            AGOTADO
+                        </Badge>
+                    )}
+                </div>
 
-                  <div className="d-flex justify-content-center align-items-center gap-2 mb-3">
-                      <span className="text-warning fs-5">★ ★ ★ ★ ☆</span>
+                {/* 2. CUERPO DE LA TARJETA (CENTRADO) */}
+                <Card.Body className="d-flex flex-column text-center p-3">
+                  
+                  {/* Título (Gris oscuro / Negrita) */}
+                  <h5 className="fw-bold text-secondary mb-2">
+                    {product.title}
+                  </h5>
+
+                  {/* (SIN ESTRELLAS, como pediste) */}
+
+                  {/* Precio (Rojo / Grande) */}
+                  <h3 className="fw-bold text-danger my-2">
+                    ${product.price}
+                  </h3>
+
+                  {/* Espaciador para empujar el botón al fondo */}
+                  <div className="mt-auto pt-3">
+                    <Link to={`/product/${product.id}`} className="d-grid text-decoration-none">
+                        {/* Botón Negro y Ancho Completo */}
+                        <Button variant="dark" size="lg" className="rounded-0 text-uppercase fs-6 fw-bold py-2">
+                            Ver Detalles
+                        </Button>
+                    </Link>
                   </div>
-                  <Card.Text className="fw-bold text-danger fs-5">
-                  ${product.price.toFixed(2)}
-                  </Card.Text>
 
-                  <Link to={`/product/${product.id}`} className="d-block text-decoration-none">
-                      <Button variant="dark" className="w-100 rounded-0 text-uppercase">Ver Detalles</Button>
-                  </Link>
-              </Card.Body>
+                </Card.Body>
               </Card>
-          </Col>
+
+            </Col>
           ))}
-      </Row>
+        </Row>
+      )}
     </Container>
   );
 }

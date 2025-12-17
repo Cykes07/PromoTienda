@@ -6,7 +6,7 @@ export const products = [
     price: 45.99,
     stock: 120,
     image: "../img/Marquina_Black.jpeg", // Asegúrate de que el nombre del archivo coincida
-    gallery: ["../assets/Marquina_Black.jpeg","../src/assets/Portoro_Black.jpeg","../src/assets/Marquina_Black.jpeg"],  // Puedes agregar más fotos si tienes
+    gallery: ["../img/Marquina_Black.jpeg","../img/Portoro_Black.jpeg","../imgs/Marquina_Black.jpeg"],  // Puedes agregar más fotos si tienes
     description: "Porcelanato de alto tráfico con acabado mate, ideal para exteriores.",
     specs: "Formato: 60x120cm | Acabado: Mate | Origen: España",
     brand: "idk",
@@ -24,8 +24,8 @@ export const products = [
     category: "Mosaicos",
     price: 12.50,
     stock: 0,
-    image: "src/assets/Portoro_Black.jpeg",
-    gallery: ["src/assets/Portoro_Black.jpeg"],
+    image: "../img/Portoro_Black.jpeg",
+    gallery: ["../img/Portoro_Black.jpeg"],
     description: "Elegancia pura con vetas blancas sobre fondo negro profundo.",
     specs: "Formato: 30x30cm | Acabado: Brillante",
     brand: "idk2",

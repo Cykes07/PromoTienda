@@ -1,34 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { Container, Spinner } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 
 export const AuthRoute = () => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // 1. Revisar si ya hay sesión activa
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkUserRole = async () => {
+      // 1. Obtenemos sesión
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-      setLoading(false);
-    });
 
-    // 2. Escuchar cambios (login/logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
-    });
+      if (session) {
+        // 2. PREGUNTAMOS A LA BASE DE DATOS: ¿Qué rol tiene este ID?
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
 
-    return () => subscription.unsubscribe();
+        // 3. Si el rol es 'admin', lo dejamos pasar
+        if (data && data.role === 'admin') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      }
+      setLoading(false);
+    };
+
+    checkUserRole();
   }, []);
 
-  if (loading) return (
-      <Container className="d-flex justify-content-center mt-5">
-          <Spinner animation="border" />
-      </Container>
-  );
+  if (loading) return <div className="text-center mt-5"><Spinner animation="border" /></div>;
+  if (!session) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
 
-  // Si hay sesión, muestra el panel (Outlet). Si no, manda al Login.
-  return session ? <Outlet /> : <Navigate to="/login" />;
+  return <Outlet />;
 };
