@@ -21,7 +21,7 @@ function Home() {
 
 function App() {
   return (
-    <BrowserRouter basename="/PromoTienda">
+    <BrowserRouter >
       <div className="bg-light min-vh-100 d-flex flex-column">
         
         {/* El Header ahora es independiente */}
