@@ -5,10 +5,18 @@ export const products = [
     category: "Porcelanatos",
     price: 45.99,
     stock: 120,
-    image: "/img/Marquina_Black.jpeg", // Asegúrate de que el nombre del archivo coincida
-    gallery: ["/img/Marquina_Black.jpeg","/img/Portoro_Black.jpeg","/img/Marquina_Black.jpeg"],  // Puedes agregar más fotos si tienes
+    image: "src/assets/Marquina_Black.jpeg", // Asegúrate de que el nombre del archivo coincida
+    gallery: ["src/assets/Marquina_Black.jpeg","src/assets/Portoro_Black.jpeg","src/assets/Marquina_Black.jpeg"],  // Puedes agregar más fotos si tienes
     description: "Porcelanato de alto tráfico con acabado mate, ideal para exteriores.",
-    specs: "Formato: 60x120cm | Acabado: Mate | Origen: España"
+    specs: "Formato: 60x120cm | Acabado: Mate | Origen: España",
+    brand: "idk",
+    application: "Piso / Pared",
+    destonificado: true,
+    finish: "Pulido Brillante",
+    code: "POR-NG-6060",
+    unitOfSale: "m2",
+    m2PerBox: 1.44,
+    differentiatedFaces: true
   },
   {
     id: 2,
@@ -16,10 +24,18 @@ export const products = [
     category: "Mosaicos",
     price: 12.50,
     stock: 0,
-    image: "/img/Portoro_Black.jpeg",
-    gallery: ["/img/Portoro_Black.jpeg"],
+    image: "src/assets/Portoro_Black.jpeg",
+    gallery: ["src/assets/Portoro_Black.jpeg"],
     description: "Elegancia pura con vetas blancas sobre fondo negro profundo.",
-    specs: "Formato: 30x30cm | Acabado: Brillante"
+    specs: "Formato: 30x30cm | Acabado: Brillante",
+    brand: "idk2",
+    application: "Piso / Pared",
+    destonificado: true,
+    finish: "Pulido Brillante",
+    code: "POR-NG-6060",
+    unitOfSale: "m2",
+    m2PerBox: 1.44,
+    differentiatedFaces: true
   },
   {
     id: 3,
