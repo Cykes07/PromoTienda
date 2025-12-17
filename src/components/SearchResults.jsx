@@ -51,7 +51,6 @@ export function SearchResults() {
           <div className="text-center py-5">
              <h1> 😢</h1>
              <h3> No encontramos nada similar.</h3>
-             <p>Intenta buscar "Porcelanato" o "Baño".</p>
           </div>
         )}
       </Row>

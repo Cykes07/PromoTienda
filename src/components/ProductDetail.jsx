@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Container, Row, Col, Button, Spinner, Badge, Tabs, Tab, Table, Carousel } from 'react-bootstrap';
+import { Helmet } from 'react-helmet-async';
 
 export function ProductDetail() {
   const { id } = useParams();
@@ -27,7 +28,7 @@ export function ProductDetail() {
   };
 
   if (loading) return <Container className="py-5 text-center"><Spinner animation="border" /></Container>;
-  if (!product) return <Container className="py-5 text-center"><h2>Producto no encontrado 😕</h2><Link to="/">Volver</Link></Container>;
+  if (!product) return <Container className="py-5 text-center"><h2>Producto no encontrado 😕</h2><Link to="/"><Button variant="dark" className="mt-3">Volver al Inicio</Button></Link></Container>;
 
   const specs = product.specifications || [];
   const allImages = [];
@@ -40,6 +41,12 @@ export function ProductDetail() {
   return (
     <Container className="py-5">
       {/* PEQUEÑO ESTILO CSS PARA QUITAR EL AZUL DE LAS PESTAÑAS */}
+      {product && (
+          <Helmet>
+              <title>{product.title} | PromoConstruye</title>
+              <meta name="description" content={`Compra ${product.title} al mejor precio. ${product.description?.substring(0, 100)}...`} />
+          </Helmet>
+      )}
       <style>
         {`
           .custom-tabs .nav-link {

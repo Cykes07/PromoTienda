@@ -41,7 +41,7 @@ export const AdminLayout = () => {
                 {/* 1. IMAGEN DEL LOGO */}
                 {/* Asegúrate de que 'logo-white.png' esté en tu carpeta 'public' */}
                 <img 
-                    src="src/assets/PromoLogo.png" 
+                    src="../img/PromoLogo.png" 
                     alt="Logo PromoConstruye" 
                     className="img-fluid mb-2" 
                     style={{ maxHeight: '60px', objectFit: 'contain' }} 

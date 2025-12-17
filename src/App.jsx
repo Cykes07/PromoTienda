@@ -2,7 +2,10 @@
 
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-
+// 1. Importamos Helmet
+import { Helmet } from 'react-helmet-async';
+// 2. Importamos supabase (Faltaba esto para que funcione el log de visitas en Home)
+import { supabase } from './supabaseClient';
 
 // --- IMPORTACIONES PÚBLICAS ---
 import { Header } from './components/Header';
@@ -15,9 +18,9 @@ import { Login } from './pages/Login';
 
 // --- IMPORTACIONES DE ADMIN ---
 import { AuthRoute } from './components/AuthRoute';
-import { AdminLayout } from './components/AdminLayout'; // <--- NUEVO LAYOUT AZUL
-import { AdminHome } from './pages/admin/AdminHome';    // <--- NUEVO DASHBOARD
-import { AdminProducts } from './pages/admin/AdminProducts'; // <--- TU ANTIGUA TABLA RENOMBRADA
+import { AdminLayout } from './components/AdminLayout';
+import { AdminHome } from './pages/admin/AdminHome';
+import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminPagesEditor } from './pages/admin/AdminPagesEditor';
 
@@ -30,49 +33,58 @@ const ShopLayout = () => {
     <div className="bg-light min-vh-100 d-flex flex-column">
       <Header />
       <div className="flex-grow-1"><Outlet /></div>
-      <footer className="bg-dark text-white py-4 mt-auto text-center"><p>© 2025 PromoTienda</p></footer>
+      <footer className="bg-dark text-white py-4 mt-auto text-center"><p>© 2025 CONSTRUCTORA PROYECTO INMOBILIARIO PROMOCONSTRUYE S.A.</p></footer>
     </div>
   );
 };
 
-function Home() {useEffect(() => {
+// --- COMPONENTE HOME CON HELMET ---
+function Home() {
+  useEffect(() => {
       const logVisit = async () => {
+          // Asegúrate de que la tabla 'visits' exista en Supabase, si no, comenta esto
           await supabase.from('visits').insert([{ page: 'home' }]);
       };
       logVisit();
   }, []);
-   return (<><Hero /><ProductGrid /></>); }
+
+  return (
+    <>
+      {/* 3. AQUÍ VA LA CONFIGURACIÓN SEO DE TU PÁGINA PRINCIPAL */}
+      <Helmet>
+        <title>PromoConstruye | Materiales de Construcción y Acabados</title>
+        <meta name="description" content="La mejor tienda de porcelanatos, grifería y acabados para tu hogar en Ecuador." />
+      </Helmet>
+
+      <Hero />
+      <ProductGrid />
+    </>
+  ); 
+}
 
 function App() {
   return (
     <BrowserRouter>
         <Routes>
-            {/* RUTA 1: LA TIENDA PÚBLICA */}
             <Route element={<ShopLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="*" element={<NotFound />} /> 
             </Route>
 
-            {/* RUTA 2: LOGIN (Suelto) */}
+            {/* RUTA 2: LOGIN (Suelto, sin header ni footer) */}
             <Route path="/login" element={<Login />} />
 
-            {/* RUTA 3: EL ÁREA DE ADMIN (Protegida y con nuevo diseño) */}
-            <Route element={<AuthRoute />}> {/* 1. Primero protege */}
-                <Route path="/admin" element={<AdminLayout />}> {/* 2. Luego aplica el diseño azul */}
-                    
-                    {/* Si entran a "/admin", muestra el Dashboard de estadísticas */}
+            <Route element={<AuthRoute />}> 
+                <Route path="/admin" element={<AdminLayout />}> 
                     <Route index element={<AdminHome />} />
-                    
-                    {/* Si entran a "/admin/products", muestra tu tabla antigua */}
                     <Route path="products" element={<AdminProducts />} />
-                    
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="pages" element={<AdminPagesEditor />} />
                 </Route>
             </Route>
 
-            <Route path="*" element={<NotFound />} />
         </Routes>
     </BrowserRouter>
   );
