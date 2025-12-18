@@ -144,10 +144,29 @@ export function AdminProducts() {
   const checkSku = async () => {
     const code = formData.product_code;
     if (!code) return alert("Escribe un código primero.");
+    
     setSkuCheckStatus('loading');
-    const { data, error } = await supabase.from('local_products_ref').select('*').eq('code', code).single();
-    if (error || !data) { setSkuCheckStatus('error'); setSkuCheckMsg("❌ No existe en el sistema local."); } 
-    else { setSkuCheckStatus('success'); setSkuCheckMsg(`✅ ¡Correcto! Es: "${data.name}"`); }
+    const { data, error } = await supabase
+        .from('local_products_ref')
+        .select('*') 
+        .eq('code', code)
+        .single();
+
+    if (error || !data) { 
+        setSkuCheckStatus('error'); 
+        setSkuCheckMsg("No existe en el sistema local."); 
+    } else { 
+        setSkuCheckStatus('success'); 
+        setSkuCheckMsg(`¡Encontrado! Es: "${data.name}"`);
+        
+        if (!formData.stock || formData.stock == 0) {
+            setFormData(prev => ({ 
+                ...prev, 
+                stock: data.stock  
+            }));
+            if (errors.stock) setErrors({...errors, stock: null});
+        }
+    }
   };
 
   const handleOpenModal = (product = null) => {
