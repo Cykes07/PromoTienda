@@ -1,10 +1,6 @@
-// src/App.jsx
-
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-// 1. Importamos Helmet
 import { Helmet } from 'react-helmet-async';
-// 2. Importamos supabase (Faltaba esto para que funcione el log de visitas en Home)
 import { supabase } from './supabaseClient';
 
 // --- IMPORTACIONES PÚBLICAS ---
@@ -15,6 +11,7 @@ import { ProductDetail } from './components/ProductDetail';
 import { NotFound } from './components/NotFound';
 import { SearchResults } from './components/SearchResults';
 import { Login } from './pages/Login';
+import { CategoryPage } from './pages/CategoryPage';
 
 // --- IMPORTACIONES DE ADMIN ---
 import { AuthRoute } from './components/AuthRoute';
@@ -38,11 +35,9 @@ const ShopLayout = () => {
   );
 };
 
-// --- COMPONENTE HOME CON HELMET ---
 function Home() {
   useEffect(() => {
       const logVisit = async () => {
-          // Asegúrate de que la tabla 'visits' exista en Supabase, si no, comenta esto
           await supabase.from('visits').insert([{ page: 'home' }]);
       };
       logVisit();
@@ -50,7 +45,6 @@ function Home() {
 
   return (
     <>
-      {/* 3. AQUÍ VA LA CONFIGURACIÓN SEO DE TU PÁGINA PRINCIPAL */}
       <Helmet>
         <title>PromoConstruye | Materiales de Construcción y Acabados</title>
         <meta name="description" content="La mejor tienda de porcelanatos, grifería y acabados para tu hogar en Ecuador." />
@@ -71,9 +65,9 @@ function App() {
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="*" element={<NotFound />} /> 
+                <Route path="/category/:slug" element={<CategoryPage />} />
             </Route>
 
-            {/* RUTA 2: LOGIN (Suelto, sin header ni footer) */}
             <Route path="/login" element={<Login />} />
 
             <Route element={<AuthRoute />}> 
