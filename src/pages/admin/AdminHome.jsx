@@ -3,47 +3,57 @@ import { Row, Col, Card, Spinner } from 'react-bootstrap';
 import { supabase } from '../../supabaseClient'; 
 
 export function AdminHome() {
-    // 1. Agregamos 'visits' al estado inicial
-    const [stats, setStats] = useState({ products: 0, lowStock: 0, visits: 0 });
+    // Estado unificado
+    const [stats, setStats] = useState({ 
+        products: 0, 
+        lowStock: 0, 
+        visits: 0,
+        users: 0 
+    });
     const [loading, setLoading] = useState(true);
+    const [limiteUsado, setLimiteUsado] = useState(5); 
 
     useEffect(() => {
-        async function loadStats() {
+        async function loadDashboardData() {
             try {
-                // A. Contamos los productos
-                const { count: prodCount } = await supabase
-                    .from('products')
-                    .select('*', { count: 'exact', head: true });
+                let limiteCritico = 5; 
                 
-                // B. Contamos stock bajo (< 5)
-                const { count: stockCount } = await supabase
-                    .from('products')
-                    .select('*', { count: 'exact', head: true })
-                    .lt('stock', 5);
+                const { data: configData } = await supabase
+                    .from('app_settings')
+                    .select('critical_stock_limit')
+                    .single();
 
-                // C. Contamos las VISITAS REALES (Nueva tabla)
-                // Si aún no creas la tabla en SQL, esto dará error, por eso el try/catch
-                const { count: visitCount, error } = await supabase
-                    .from('visits')
-                    .select('*', { count: 'exact', head: true });
-
-                if (error && error.code !== 'PGRST116') {
-                    console.error("Error cargando visitas (quizás falta la tabla):", error);
+                if (configData) {
+                    limiteCritico = configData.critical_stock_limit;
+                    setLimiteUsado(limiteCritico); 
                 }
 
+                const [prodRes, stockRes, visitRes, userRes] = await Promise.all([
+                    supabase.from('products').select('*', { count: 'exact', head: true }),
+                    supabase.from('products').select('*', { count: 'exact', head: true })
+                            .lt('stock', limiteCritico), 
+
+                    // C. Visitas
+                    supabase.from('visits').select('*', { count: 'exact', head: true }),
+                    supabase.from('profiles').select('*', { count: 'exact', head: true }) 
+                ]);
+
+                // PASO 3: GUARDAR RESULTADOS
                 setStats({ 
-                    products: prodCount || 0, 
-                    lowStock: stockCount || 0,
-                    visits: visitCount || 0  // Guardamos el dato real
+                    products: prodRes.count || 0, 
+                    lowStock: stockRes.count || 0,
+                    visits: visitRes.count || 0,
+                    users: userRes.count || 0
                 });
 
             } catch (error) {
-                console.error("Error general:", error);
+                console.error("Error cargando dashboard:", error);
             } finally {
                 setLoading(false);
             }
         }
-        loadStats();
+
+        loadDashboardData();
     }, []);
 
     if (loading) return <div className="p-5 text-center"><Spinner animation="border" /></div>;
@@ -64,24 +74,26 @@ export function AdminHome() {
         <Col md={3} className="mb-3">
             <Card className="bg-danger text-white p-3 shadow-sm text-center h-100 border-0">
                 <h1 className="fw-bold display-4">{stats.lowStock}</h1>
-                <h6 className="text-uppercase opacity-75">Stock Crítico</h6>
+                <h6 className="text-uppercase opacity-75">
+                    Stock Crítico 
+                    <small style={{fontSize: '0.6em', display: 'block'}}>(Menos de {limiteUsado} un.)</small>
+                </h6>
             </Card>
         </Col>
 
         {/* Visitas REALES */}
         <Col md={3} className="mb-3">
             <Card className="bg-success text-white p-3 shadow-sm text-center h-100 border-0">
-                {/* Aquí mostramos el dato real de la BD */}
                 <h1 className="fw-bold display-4">{stats.visits}</h1>
                 <h6 className="text-uppercase opacity-75">Visitas Totales</h6>
             </Card>
         </Col>
 
-        {/* Usuarios (Por ahora lo dejamos fijo o podemos contar la tabla users si quieres) */}
+        {/* Usuarios */}
         <Col md={3} className="mb-3">
             <Card className="bg-info text-white p-3 shadow-sm text-center h-100 border-0">
-                <h1 className="fw-bold display-4">--</h1>
-                <h6 className="text-uppercase opacity-75">Usuarios (Pronto)</h6>
+                <h1 className="fw-bold display-4">{stats.users}</h1>
+                <h6 className="text-uppercase opacity-75">Usuarios Registrados</h6>
             </Card>
         </Col>
       </Row>
