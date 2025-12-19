@@ -4,6 +4,8 @@ import { supabase } from '../supabaseClient';
 import { Container, Row, Col, Button, Spinner, Badge, Tabs, Tab, Table, Carousel } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 
+const BUTTON_HEX_COLOR = "#ff5d1dff";
+
 export function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -108,9 +110,14 @@ export function ProductDetail() {
                             href={product.external_url} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="btn btn-outline-dark" 
+                            className="btn shadow fw-bold px-5 py-2  text-white custom-external-btn"
+                            style={{ 
+                                backgroundColor: BUTTON_HEX_COLOR, 
+                                borderColor: BUTTON_HEX_COLOR,
+                                fontSize: '1.1rem'
+                            }} 
                         >
-                            Click to View 
+                            Vista 360
                         </a>
                     </div>
                 )}
