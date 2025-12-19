@@ -40,7 +40,6 @@ export function ProductDetail() {
 
   return (
     <Container className="py-5">
-      {/* PEQUEÑO ESTILO CSS PARA QUITAR EL AZUL DE LAS PESTAÑAS */}
       {product && (
           <Helmet>
               <title>{product.title} | PromoConstruye</title>
@@ -50,11 +49,11 @@ export function ProductDetail() {
       <style>
         {`
           .custom-tabs .nav-link {
-            color: #555 !important; /* Gris oscuro en lugar de azul */
+            color: #555 !important;
             font-weight: 600;
           }
           .custom-tabs .nav-link.active {
-            color: #000 !important; /* Negro total cuando está activo */
+            color: #000 !important;
             border-bottom: 2px solid #000 !important;
           }
         `}
@@ -86,12 +85,9 @@ export function ProductDetail() {
 
         <Col md={6}>
             <div className="ps-md-4 mt-3 mt-md-0">
-                <Badge bg="dark" className="mb-2">{product.category}</Badge> {/* Categoría negra/gris */}
+                <Badge bg="dark" className="mb-2">{product.category}</Badge> 
                 <h1 className="fw-bold">{product.title}</h1>
-                
-                {/* CAMBIO DE COLOR: Antes era 'text-primary' (azul), ahora 'text-dark' (negro) */}
                 <h2 className="text-danger fw-bold my-3" style={{ fontSize: '2.5rem' }}> ${product.price}</h2>
-                
                 <p className="lead text-muted">{product.description}</p>
                 <hr />
                 <div className="d-flex align-items-center mb-4">
@@ -99,9 +95,26 @@ export function ProductDetail() {
                         {product.stock > 0 ? `En Stock: ${product.stock} unidades` : 'Agotado'}
                     </span>
                 </div>
-                <Button variant="dark" size="lg" className="w-100" disabled={product.stock <= 0}>
+                
+                {/* BOTÓN DE CARRITO */}
+                <Button variant="dark" size="lg" className="w-100 mb-3" disabled={product.stock <= 0}>
                     {product.stock > 0 ? 'Añadir al Carrito' : 'Sin Stock'}
                 </Button>
+
+                {/*"CLICK TO VIEW"  */}
+                {product.external_url && (
+                    <div>
+                        <a 
+                            href={product.external_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-outline-dark" 
+                        >
+                            Click to View 
+                        </a>
+                    </div>
+                )}
+
             </div>
         </Col>
       </Row>
@@ -109,14 +122,11 @@ export function ProductDetail() {
       <Row>
           <Col>
             <div className="bg-white p-4 rounded shadow-sm border">
-                {/* CAMBIO DE ORDEN Y CLASE CSS PERSONALIZADA */}
                 <Tabs 
-                    defaultActiveKey="desc" // <--- AHORA ARRANCA EN DESCRIPCIÓN
+                    defaultActiveKey="desc" 
                     id="product-tabs" 
-                    className="mb-3 custom-tabs" // <--- NUEVA CLASE PARA EL COLOR OSCURO
+                    className="mb-3 custom-tabs" 
                 >
-                    
-                    {/* 1. DESCRIPCIÓN COMPLETA (PRIMERO) */}
                     <Tab eventKey="desc" title="DESCRIPCIÓN COMPLETA">
                         <div className="p-2">
                             <p className="text-dark" style={{fontSize: '1.1rem'}}>
@@ -128,7 +138,6 @@ export function ProductDetail() {
                         </div>
                     </Tab>
 
-                    {/* 2. INFORMACIÓN ADICIONAL (SEGUNDO) */}
                     <Tab eventKey="info" title="INFORMACIÓN ADICIONAL">
                         <h5 className="mb-3 text-secondary">Ficha Técnica</h5>
                         {specs.length > 0 ? (
