@@ -20,11 +20,11 @@ import { AdminHome } from './pages/admin/AdminHome';
 import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminPagesEditor } from './pages/admin/AdminPagesEditor';
+import { AdminHero } from './pages/admin/AdminHero';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
-// Layout Público (Tienda)
 const ShopLayout = () => {
   return (
     <div className="bg-light min-vh-100 d-flex flex-column">
@@ -76,6 +76,7 @@ function App() {
                     <Route path="products" element={<AdminProducts />} />
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="pages" element={<AdminPagesEditor />} />
+                    <Route path="carrusel" element={<AdminHero />} />
                 </Route>
             </Route>
 

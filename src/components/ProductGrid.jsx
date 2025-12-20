@@ -13,7 +13,6 @@ export function ProductGrid() {
         const { data, error } = await supabase
           .from('products')
           .select('*')
-          // 1. ELIMINAMOS EL FILTRO .gt('stock', 0) PARA MOSTRAR TODO
           .order('id', { ascending: false });
 
         if (error) throw error;
