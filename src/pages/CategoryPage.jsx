@@ -1,131 +1,116 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { Container, Row, Col, Card, Spinner, Alert, Form } from 'react-bootstrap';
+import { Container, Row, Col, Spinner, Alert, Badge, Breadcrumb } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
+import { NotFound } from '../components/NotFound';
 
 export function CategoryPage() {
-  const { slug } = useParams(); 
+  const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const subFilter = searchParams.get('sub');
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortOption, setSortOption] = useState('relevance');
+  const [isNotFound, setIsNotFound] = useState(false);
 
   useEffect(() => {
-    const fetchByCategory = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      setProducts([]); 
+      setIsNotFound(false);
+      
       try {
-        const categoryName = decodeURIComponent(slug);
 
-        let query = supabase
-            .from('products')
-            .select('*')
-            .ilike('category', categoryName); 
+        if (slug.toLowerCase() !== 'promociones') {
+            const { data: categoryData, error: catError } = await supabase
+                .from('categories')
+                .select('is_visible_in_menu')
+                .eq('name', slug)
+                .single();
+            if (catError || !categoryData || categoryData.is_visible_in_menu === false) {
+                setIsNotFound(true);
+                setLoading(false);
+                return; 
+            }
+        }
 
-        switch (sortOption) {
-            case 'price-asc':
-                query = query.order('price', { ascending: true });
-                break;
-            case 'price-desc':
-                query = query.order('price', { ascending: false }); 
-                break;
-            case 'name-asc':
-                query = query.order('title', { ascending: true });
-                break;
-            case 'name-desc':
-                query = query.order('title', { ascending: false });
-                break;
-            case 'rating':
-                query = query.order('id', { ascending: false }); 
-                break;
-            case 'relevance':
-            default:
-                break;
+        let query = supabase.from('products').select('*');
+
+        if (slug.toLowerCase() === 'promociones') {
+           query = query.contains('category', ['Promociones']);
+        } else {
+           query = query.contains('category', [slug]);
         }
 
         const { data, error } = await query;
-
         if (error) throw error;
-        setProducts(data || []);
 
-      } catch (error) {
-        console.error("Error cargando categoría:", error.message);
+        let filteredProducts = data || [];
+
+        if (subFilter && filteredProducts.length > 0) {
+            filteredProducts = filteredProducts.filter(p => 
+                p.subcategory && 
+                Array.isArray(p.subcategory) && 
+                p.subcategory.includes(subFilter)
+            );
+        }
+
+        setProducts(filteredProducts);
+
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchByCategory();
-  }, [slug, sortOption]);
+    fetchData();
+  }, [slug, subFilter]); 
+  if (isNotFound) {
+      return <NotFound />;
+  }
 
-  const displayTitle = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+  if (loading) return <Container className="py-5 text-center"><Spinner animation="border" /></Container>;
 
   return (
-    <Container className="py-5">
-      <Helmet>
-        <title>{displayTitle} | PromoConstruye</title>
-        <meta name="description" content={`Explora nuestra colección de ${displayTitle}.`} />
-      </Helmet>
+    <Container className="py-4">
+      <Helmet><title>{slug} - PromoConstruye</title></Helmet>
 
+      <Breadcrumb className="mb-4">
+          <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>Inicio</Breadcrumb.Item>
+          <Breadcrumb.Item active={!subFilter} linkAs={Link} linkProps={{ to: `/category/${slug}` }}>{slug}</Breadcrumb.Item>
+          {subFilter && <Breadcrumb.Item active>{subFilter}</Breadcrumb.Item>}
+      </Breadcrumb>
 
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 border-bottom pb-3">
-          <h2 className="fw-bold text-secondary m-0 mb-3 mb-md-0">
-            Categoría: <span className="text-dark">{displayTitle}</span>
-          </h2>
-          
-          <div className="d-flex align-items-center">
-              <span className="me-2 text-muted fw-bold small">Ordenar por:</span>
-              <Form.Select 
-                  size="sm" 
-                  style={{ width: '200px', cursor: 'pointer' }}
-                  value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value)}
-                  className="border-secondary shadow-sm"
-              >
-                  <option value="relevance">Relevancia</option>
-                  <option value="rating">Mejor valorados</option>
-                  <option value="name-asc">Nombre (A-Z)</option>
-                  <option value="name-desc">Nombre (Z-A)</option>
-                  <option value="price-asc">Precio: Más bajo primero</option>
-                  <option value="price-desc">Precio: Más alto primero</option>
-              </Form.Select>
-          </div>
+      <div className="d-flex align-items-center mb-4">
+        <h1 className="fw-bold mb-0 text-uppercase">{slug}</h1>
+        {subFilter && <Badge bg="danger" className="ms-3 fs-6">{subFilter}</Badge>}
       </div>
-      
-      {loading ? (
-        <div className="text-center py-5"><Spinner animation="border" variant="dark"/></div>
-      ) : products.length === 0 ? (
-        <Alert variant="info" className="text-center">
-            <h4>No hay productos en esta categoría.</h4>
-            <Link to="/" className="btn btn-outline-dark mt-3">Ver todo el catálogo</Link>
+
+      {products.length === 0 ? (
+        <Alert variant="info" className="text-center py-5">
+            <h4>No hay productos aquí 🧐</h4>
+            <p>No encontramos productos en <strong>{slug}</strong>.</p>
+            <Link to="/" className="btn btn-dark mt-2">Volver</Link>
         </Alert>
       ) : (
         <Row>
           {products.map((product) => (
-            <Col key={product.id} md={4} lg={3} className="mb-4">
-               {/* TARJETA DE PRODUCTO */}
-               <Card className="h-100 border-0 shadow-sm hover-effect">
-                  <Link to={`/product/${product.id}`} className="position-relative overflow-hidden d-block" style={{ height: '250px' }}>
-                      <Card.Img 
-                          variant="top" 
-                          src={product.image || "https://via.placeholder.com/300?text=Sin+Foto"} 
-                          className="h-100 w-100" 
-                          style={{ objectFit: 'cover' }}
-                          onError={(e) => {e.target.src = "https://via.placeholder.com/300?text=Sin+Foto"}}
-                      />
-                      {product.stock <= 0 && <div className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small fw-bold">AGOTADO</div>}
-                  </Link>
-                  <Card.Body className="text-center">
-                    <Link to={`/product/${product.id}`} className="text-decoration-none">
-                        <h6 className="fw-bold text-secondary mb-2 text-truncate">{product.title}</h6>
+             <Col key={product.id} xs={6} md={4} lg={3} className="mb-4">
+                <div className="card h-100 shadow-sm border-0">
+                    <Link to={`/product/${product.id}`} className="text-decoration-none text-dark">
+                        <div style={{height: '250px', overflow: 'hidden', position: 'relative'}}>
+                             <img src={product.image} className="card-img-top w-100 h-100" style={{objectFit: 'cover'}} alt={product.title}/>
+                             {product.stock <= 0 && <span className="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 small fw-bold">AGOTADO</span>}
+                        </div>
+                        <div className="card-body">
+                            <h6 className="card-title fw-bold text-truncate">{product.title}</h6>
+                            <p className="card-text text-danger fw-bold fs-5 mb-1">${product.price}</p>
+                            <small className="text-muted">Stock: {product.stock}</small>
+                        </div>
                     </Link>
-                    <h5 className="text-danger fw-bold">${product.price}</h5>
-                    <Link to={`/product/${product.id}`} className="btn btn-dark w-100 rounded-0 text-uppercase mt-2">
-                      Ver Detalles
-                    </Link>
-                  </Card.Body>
-              </Card>
-            </Col>
+                </div>
+             </Col>
           ))}
         </Row>
       )}

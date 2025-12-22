@@ -25,3 +25,47 @@
 
 .cursor-pointer { cursor: pointer; }
 .cursor-pointer:hover { text-decoration: underline; }
+
+/* =========================================
+   ESTILOS DEL CARRUSEL (HERO)
+   ========================================= */
+
+/* Flechas redondas sin fondo */
+.custom-carousel .carousel-control-prev,
+.custom-carousel .carousel-control-next {
+    width: 45px !important;
+    height: 45px !important;
+    top: auto !important;
+    bottom: 30px !important;
+    opacity: 1 !important;
+    background-color: transparent !important; 
+    border: 2px solid #212529; /* Borde oscuro */
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+/* Efecto Hover */
+.custom-carousel .carousel-control-prev:hover,
+.custom-carousel .carousel-control-next:hover {
+    background-color: rgba(33, 37, 41, 0.1) !important;
+    transform: scale(1.1);
+}
+
+/* Posición Flecha Derecha */
+.custom-carousel .carousel-control-next { 
+    right: 30px !important; 
+}
+
+/* Posición Flecha Izquierda (Junto a la derecha) */
+.custom-carousel .carousel-control-prev { 
+    left: auto !important; 
+    right: 85px !important; 
+}
+
+/* Ajuste de íconos internos */
+.carousel-control-prev-icon, 
+.carousel-control-next-icon { 
+    width: 20px; 
+    height: 20px; 
+}

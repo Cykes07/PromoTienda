@@ -1,7 +1,8 @@
 import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'; 
 import { Container, Row, Col, Nav, Button } from 'react-bootstrap';
 import { supabase } from '../supabaseClient';
+import logoImg from '../assets/PromoLogo.png'; 
 
 const sidebarStyles = {
     minHeight: '100vh',
@@ -33,9 +34,10 @@ export const AdminLayout = () => {
     <Container fluid className="p-0 bg-light"> 
       <Row className="g-0">
         <Col md={2} className="p-3 d-flex flex-column" style={sidebarStyles}>
+            
             <div className="mb-4 mt-2 text-center">
                 <img 
-                    src="../img/PromoLogo.png" 
+                    src={logoImg} 
                     alt="Logo PromoConstruye" 
                     className="img-fluid mb-2" 
                     style={{ maxHeight: '60px', objectFit: 'contain' }} 
@@ -55,10 +57,7 @@ export const AdminLayout = () => {
                     Clientes
                 </NavLink>
                 <NavLink to="/admin/pages" style={navLinkStyle}>
-                    Páginas
-                </NavLink>
-                <NavLink to="/admin/carrusel" style={navLinkStyle}>
-                    Editor Carrusel
+                    Editor de Páginas
                 </NavLink>
             </Nav>
 
@@ -72,8 +71,6 @@ export const AdminLayout = () => {
                 </Button>
             </div>
         </Col>
-
-        {/* Contenido Principal */}
         <Col md={10} style={{height: '100vh', overflowY: 'auto'}}>
             <div className="p-5">
                 <Outlet />

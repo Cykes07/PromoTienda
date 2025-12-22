@@ -1,34 +1,66 @@
-import React, { useState } from 'react';
-import { Navbar, Container, Form, Button, Nav, InputGroup } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Navbar, Container, Form, Button, Nav, InputGroup, NavDropdown } from 'react-bootstrap';
 import { FaSearch, FaShoppingCart } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; 
+import { supabase } from '../supabaseClient';
 import logoImg from '../assets/PromoLogo.png'; 
 
 export function Header() {
   const [searchText, setSearchText] = useState("");
+  const [categoriesTree, setCategoriesTree] = useState([]); 
   const navigate = useNavigate();
+  const location = useLocation(); 
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select(`
+            id, 
+            name, 
+            is_visible_in_menu,
+            subcategories (
+              id, 
+              name,
+              is_visible_in_menu
+            )
+          `)
+          .eq('is_visible_in_menu', true)
+          .order('name');
+
+        if (error) throw error;
+        const cleanData = (data || []).map(cat => ({
+            ...cat,
+            subcategories: (cat.subcategories || [])
+                .filter(sub => sub.is_visible_in_menu === true) 
+                .sort((a, b) => a.name.localeCompare(b.name))
+        }));
+
+        setCategoriesTree(cleanData);
+      } catch (error) {
+        console.error("Error cargando menú:", error);
+      }
+    };
+    fetchMenu();
+  }, []); 
 
   const handleSearch = (e) => {
     e.preventDefault(); 
     if (searchText.trim()) {
-      // Agregué encodeURIComponent por si buscan palabras con tildes o espacios raros
       navigate(`/search?q=${encodeURIComponent(searchText)}`);
       setSearchText(""); 
     }
   };
 
-  // LISTA DE CATEGORÍAS (Para no repetir código abajo)
-  const menuItems = [
-    { name: "Piedra Sinterizada", path: "/category/Piedra Sinterizada" },
-    { name: "Porcelanatos", path: "/category/Porcelanatos" },
-    { name: "Cerámicas", path: "/category/Cerámicas" },
-    { name: "Baño", path: "/category/Baño" },
-    { name: "Cocina", path: "/category/Cocina" },
-  ];
+  const navLinkStyle = { 
+      fontSize: '0.85rem', 
+      letterSpacing: '0.5px',
+      fontWeight: 'bold',
+      color: '#6c757d'
+  };
 
   return (
     <>
-      {/* 1. Barra Superior Roja (Sin cambios) */}
       <div className="bg-danger text-white py-1" style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>
         <Container className="d-flex justify-content-end gap-4">
           <span className="cursor-pointer">EMPRESA</span>
@@ -36,8 +68,6 @@ export function Header() {
           <span className="cursor-pointer">AYUDA</span>
         </Container>
       </div>
-
-      {/* 2. Barra Principal (Logo y Buscador - Sin cambios mayores) */}
       <Navbar bg="white" expand="lg" className="py-4 shadow-sm">
         <Container>
           <Navbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2">
@@ -73,29 +103,52 @@ export function Header() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-
-      {/* 3. MENÚ INFERIOR (AQUÍ ESTÁN LOS CAMBIOS DE DISEÑO) */}
-      <div className="border-top border-bottom py-2 bg-white sticky-top">
+      <div className="border-top border-bottom py-2 bg-white sticky-top custom-hover-nav">
         <Container>
-            {/* justify-content-center: Centra los elementos horizontalmente.
-               mx-auto: Asegura que el contenedor nav esté centrado.
-            */}
-            <Nav className="justify-content-center mx-auto">
+            <Nav className="justify-content-center mx-auto align-items-center">
               
-              {/* Mapeamos los items normales */}
-              {menuItems.map((item, index) => (
-                <Nav.Link 
-                  key={index}
-                  as={Link} 
-                  to={item.path} 
-                  className="fw-bold text-secondary px-3" // Color gris (text-secondary) y espacio lateral (px-3)
-                  style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }} // Letra más pequeña y elegante
-                >
-                  {item.name.toUpperCase()}
-                </Nav.Link>
-              ))}
+              {categoriesTree.map((cat) => {
+                  if (cat.subcategories && cat.subcategories.length > 0) {
+                      return (
+                        <NavDropdown 
+                            key={cat.id}
+                            title={cat.name.toUpperCase()} 
+                            id={`nav-dropdown-${cat.id}`}
+                            className="px-2"
+                            style={navLinkStyle}
+                        >
+                            <NavDropdown.Item as={Link} to={`/category/${cat.name}`} className="fw-bold bg-light">
+                                VER TODO {cat.name.toUpperCase()}
+                            </NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            
+                            {cat.subcategories.map(sub => (
+                                <NavDropdown.Item 
+                                    key={sub.id} 
+                                    as={Link} 
+                                    to={`/category/${cat.name}?sub=${sub.name}`}
+                                >
+                                    {sub.name}
+                                </NavDropdown.Item>
+                            ))}
+                        </NavDropdown>
+                      );
+                  } 
+                  else {
+                      return (
+                        <Nav.Link 
+                          key={cat.id}
+                          as={Link} 
+                          to={`/category/${cat.name}`} 
+                          className="px-3"
+                          style={navLinkStyle}
+                        >
+                          {cat.name.toUpperCase()}
+                        </Nav.Link>
+                      );
+                  }
+              })}
 
-              {/* Item de Promociones (Diferente color) */}
               <Nav.Link 
                 as={Link} 
                 to="/category/Promociones" 
@@ -105,9 +158,23 @@ export function Header() {
                 PROMOCIONES
               </Nav.Link>
 
-          </Nav>
+            </Nav>
         </Container>
       </div>
+
+      <style>
+        {`
+            .custom-hover-nav .nav-link { color: #6c757d !important; transition: color 0.2s; }
+            .custom-hover-nav .nav-link:hover { color: #dc3545 !important; }
+            @media (min-width: 992px) {
+                .custom-hover-nav .dropdown:hover .dropdown-menu {
+                    display: block; margin-top: 0; border-radius: 0;
+                    border-top: 3px solid #dc3545; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+            }
+            .custom-hover-nav .dropdown-toggle::after { vertical-align: middle; }
+        `}
+      </style>
     </>
   );
 }
